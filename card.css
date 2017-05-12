@@ -1,0 +1,28 @@
+ /*
+ Velvet Red: rgb(189,56,77)
+ Teal: #4E7F83
+ Grey Gradient: linear-gradient(to top, #D2DAE9, white)
+ */
+
+ body {
+  background: linear-gradient(to top, #D2DAE9, white);
+  height: 100%;
+  margin: 0;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+#card {
+  position: absolute;
+  width: 640px;
+  height: 480px;
+  top: 50%;
+  left: 50%;
+  margin: -240px 0 0 -320px;
+  /*border-radius: 10px;*/
+  box-shadow: 0px 50px 50px rgba(0,0,0,0.35);
+  background: white;
+}
+#canvas {
+  position: absolute;
+  pointer-events: none;
+}
