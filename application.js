@@ -2,12 +2,18 @@ var canvas;
 var ctx;
 var colorArray = [];
 var scale = 0;
-var grey;
+var scaleControl = {
+	x: 540,
+	y: 130,
+	width: 50,
+	barHeight: 300,
+	handleHeight: 20
+};
 
 $(document).ready(function() {
 	canvas = document.getElementById("canvas");
 	ctx = canvas.getContext("2d");
-	grey = {
+	var grey = {
 		startColor: "rgba(255, 255, 255, 1.0)",
 		endColor: "rgba(85, 80, 103, 1.0)"
 	};
@@ -34,7 +40,6 @@ $(document).ready(function() {
 	colorArray = [freezing, cool, neutral, warm, hot];
 
 	var loop = function(){
-		scale += 0.001;
 		update();
 		draw();
 	};
@@ -43,6 +48,7 @@ $(document).ready(function() {
 });
 
 function update() {
+	scale += 0.001;
 }
 
 function draw() {
@@ -67,6 +73,35 @@ function draw() {
 	drawArc(arc.x, arc.y, arc.radius, arc.width, "grey", "grey");
 	drawArc(arc.x, arc.y, arc.radius, arc.width, backGradient.startColor, backGradient.endColor);
 	drawArc(arc.x, arc.y, arc.radius, arc.width, frontGradient.startColor, frontGradient.endColor);
+
+	ctx.font = "85px Calibri";
+	ctx.textAlign = "right";
+	ctx.fillStyle = getGradient(Math.floor(scale / width), 1 - (scale % width) / width).startColor;
+	ctx.fillText(Math.round(scale * 150 - 25) + "°", 620, 80);
+	ctx.fillStyle = getGradient(Math.ceil(scale / width), (scale % width) / width).startColor;
+	ctx.fillText(Math.round(scale * 150 - 25) + "°", 620, 80);
+
+	ctx.beginPath();
+	ctx.rect(scaleControl.x, scaleControl.y, scaleControl.width, scaleControl.barHeight);
+	ctx.fillStyle = "#393A4B";
+	ctx.fill();
+
+	ctx.shadowBlur = 12 * scale;
+	ctx.shadowColor = "rgb(251, 42, 100)";
+	ctx.beginPath();
+	ctx.rect(scaleControl.x, scaleControl.y + ((scaleControl.barHeight - scaleControl.handleHeight) * (1 - scale)), scaleControl.width, scaleControl.handleHeight);
+	ctx.fillStyle = "rgb(251, 42, 100)";
+	ctx.fill();
+	ctx.shadowBlur = 0;
+
+	ctx.save();
+	ctx.rotate(-Math.PI/2);
+	ctx.font = "85px Calibri";
+	ctx.textAlign = "right";
+	ctx.fillStyle = "grey";
+	ctx.fillText("Temperature", scaleControl.x - scaleControl.width, scaleControl.y);
+	ctx.fillStyle = getGradient(Math.ceil(scale / width), (scale % width) / width).startColor;
+	ctx.restore();
 }
 
 function drawArc(x, y, radius, lineWidth, startColor, endColor) {
