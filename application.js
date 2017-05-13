@@ -1,5 +1,7 @@
+/*jshint esversion: 6 */
 var canvas;
 var ctx;
+var arc;
 var colorArray = [];
 var scale = 0;
 var scaleControl = {
@@ -20,6 +22,9 @@ var mouse = {
 	DRAG_THRESHOLD: 10
 };
 var scaleDragged = false;
+var particles = [];
+var NUM_OF_PARTICLES = 20;
+var clearAway = true;
 
 $(document).ready(function() {
 	canvas = document.getElementById("canvas");
@@ -79,6 +84,28 @@ $(document).ready(function() {
 		mouse.isClicked = false;
 	});
 
+	arc = {
+		x: 250,
+		y: canvas.height / 2,
+		radius: 200,
+		width: 16
+	};
+
+	for (var i = 0; i < NUM_OF_PARTICLES; i++) {
+		particles[i] = {
+			id: i,
+			x: arc.x + 10,
+			y: arc.y + 4 * i,
+			velocity: 1,
+			maxVelocity: 5,
+			minVelocity: 0.2,
+			dx: 1,
+			dy: 0,
+			radius: 15,
+			energy: 0.5
+		};
+	}
+
 	var loop = function(){
 		update();
 		draw();
@@ -98,30 +125,81 @@ function update() {
 		scaleControl.handleY = bound(mouse.y - scaleControl.handleHeight / 2, scaleControl.y, scaleControl.y + scaleControl.barHeight - scaleControl.handleHeight);
 		scale = 1 - (scaleControl.handleY - scaleControl.y) / (scaleControl.barHeight - scaleControl.handleHeight);
 	} else if (!mouse.isClicked) {
-		scale += 0.001;
+		//scale += 0.001;
 	}
-	scaleControl.handleY = scaleControl.y + ((scaleControl.barHeight - scaleControl.handleHeight) * (1 - scale));
-}
-
-function draw() {
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-
 	if (scale > 1) {
 		scale = 1;
 	} else if (scale < 0) {
 		scale = 0;
 	}
+	scaleControl.handleY = scaleControl.y + ((scaleControl.barHeight - scaleControl.handleHeight) * (1 - scale));
+
+	var collisionFound = false;
+	for (var i = 0; i < particles.length; i++) {
+		var particle = particles[i];
+		var old = clone(particle);
+
+		particle.velocity = particle.energy * particle.maxVelocity;
+		if (particle.velocity < particle.minVelocity) {
+			particle.velocity = particle.minVelocity;
+		}
+		particle.x += particle.velocity * particle.dx;
+		particle.y += particle.velocity * particle.dy;
+		particle.dy = particle.dy + 0.1 * (1 - scale);
+
+		for (var j = 0; j < particles.length; j++) {
+			collisionFound = true;
+			var other = particles[j];
+			if (other.id != particle.id && distance(particle.x, particle.y, other.x, other.y) < particle.radius + other.radius) {
+				let dx = particle.x - other.x;
+				let dy = particle.y - other.y;
+
+				let angleToCollisionPoint = Math.atan2(-dy, dx);
+				let oldAngle = Math.atan2(-particle.dy, particle.dx);
+				let newAngle = 2 * angleToCollisionPoint - oldAngle;
+
+				particle.dx = -Math.cos(newAngle);
+				particle.dy = Math.sin(newAngle);
+
+				let energy = (other.energy + particle.energy) / 2;
+				particle.energy = energy;
+				other.energy = energy;
+				particle.x = old.x;
+				particle.y = old.y;
+				while(clearAway && other.id != particle.id && distance(particle.x, particle.y, other.x, other.y) < particle.radius + other.radius) {
+					particle.x += particle.velocity * particle.dx;
+					particle.y += particle.velocity * particle.dy;
+				}
+			}
+		}
+
+		if (distance(particle.x, particle.y, arc.x, arc.y) > arc.radius - arc.width - particle.radius / 2) {
+			let dx = particle.x - arc.x;
+			let dy = particle.y - arc.y;
+
+			let angleToCollisionPoint = Math.atan2(-dy, dx);
+			let oldAngle = Math.atan2(-particle.dy, particle.dx);
+			let newAngle = 2 * angleToCollisionPoint - oldAngle;
+			particle.dx = -Math.cos(newAngle);
+			particle.dy = Math.sin(newAngle);
+
+			particle.x = old.x;
+			particle.y = old.y;
+			particle.energy = scale;
+		}
+	}
+	if (!collisionFound) {
+		clearAway  = false;
+	}
+}
+
+function draw() {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 	var width = 1 / (colorArray.length - 1);
 	var backGradient = getGradient(Math.floor(scale / width), 1 - (scale % width) / width);
 	var frontGradient = getGradient(Math.ceil(scale / width), (scale % width) / width);
 
-	var arc = {
-		x: 250,
-		y: canvas.height / 2,
-		radius: 200,
-		width: 16
-	};
 	drawArc(arc.x, arc.y, arc.radius, arc.width, "grey", "grey");
 	drawArc(arc.x, arc.y, arc.radius, arc.width, backGradient.startColor, backGradient.endColor);
 	drawArc(arc.x, arc.y, arc.radius, arc.width, frontGradient.startColor, frontGradient.endColor);
@@ -155,6 +233,16 @@ function draw() {
 	ctx.rotate(Math.PI / 2);
 	ctx.fillText("Temperature", 0, 0);
 	ctx.restore();
+
+	for (var i = 0; i < particles.length; i++) {
+		var particle = particles[i];
+		ctx.beginPath();
+		ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+		ctx.fillStyle = getGradient(Math.floor(particle.energy / width), 1 - (particle.energy % width) / width).startColor;
+		ctx.fill();
+		ctx.fillStyle = getGradient(Math.ceil(particle.energy / width), (particle.energy % width) / width).startColor;
+		ctx.fill();
+	}
 }
 
 function drawArc(x, y, radius, lineWidth, startColor, endColor) {
@@ -193,4 +281,12 @@ function bound(num, min, max) {
 		num = max;
 	}
 	return num;
+}
+
+function clone(object) {
+	return jQuery.extend({}, object);
+}
+
+function distance(x1, y1, x2, y2) {
+	return Math.hypot(x2 - x1, y2 - y1);
 }
