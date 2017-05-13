@@ -7,8 +7,19 @@ var scaleControl = {
 	y: 130,
 	width: 50,
 	barHeight: 300,
-	handleHeight: 20
+	handleHeight: 20,
+	handleY: 0
 };
+var mouse = {
+	x: -1,
+	y: -1,
+	clickX: -1,
+	clickY: -1,
+	isClicked: false,
+	isDragging: false,
+	DRAG_THRESHOLD: 10
+};
+var scaleDragged = false;
 
 $(document).ready(function() {
 	canvas = document.getElementById("canvas");
@@ -39,6 +50,35 @@ $(document).ready(function() {
 	};
 	colorArray = [freezing, cool, neutral, warm, hot];
 
+	$("#card").mousedown(function(e) {
+		var x = e.clientX - $("#card").offset().left;
+		var y = e.clientY - $("#card").offset().top;
+		mouse.x = x;
+		mouse.y = y;
+		mouse.clickX = x;
+		mouse.clickY = y;
+		mouse.isClicked = true;
+	})
+	.mousemove(function(e) {
+		var x = e.clientX - $("#card").offset().left;
+		var y = e.clientY - $("#card").offset().top;
+		mouse.x = x;
+		mouse.y = y;
+		if (mouse.isClicked && (Math.abs(mouse.clickX - x) > mouse.DRAG_THRESHOLD || Math.abs(mouse.clickY - y) > mouse.DRAG_THRESHOLD)) {
+			mouse.isDragging = true;
+		}
+	})
+	.mouseup(function(e) {
+		var x = e.clientX - $("#card").offset().left;
+		var y = e.clientY - $("#card").offset().top;
+		mouse.x = x;
+		mouse.y = y;
+		mouse.clickX = -1;
+		mouse.clickY = -1;
+		mouse.isDragging = false;
+		mouse.isClicked = false;
+	});
+
 	var loop = function(){
 		update();
 		draw();
@@ -48,7 +88,19 @@ $(document).ready(function() {
 });
 
 function update() {
-	scale += 0.001;
+	if (mouse.isDragging && isWithin(mouse.clickX, mouse.clickY, scaleControl.x, scaleControl.handleY, scaleControl.width, scaleControl.handleHeight)) {
+		scaleDragged = true;
+	}
+	if (!mouse.isDragging && scaleDragged) {
+		scaleDragged = false;
+	}
+	if (scaleDragged) {
+		scaleControl.handleY = bound(mouse.y - scaleControl.handleHeight / 2, scaleControl.y, scaleControl.y + scaleControl.barHeight - scaleControl.handleHeight);
+		scale = 1 - (scaleControl.handleY - scaleControl.y) / (scaleControl.barHeight - scaleControl.handleHeight);
+	} else if (!mouse.isClicked) {
+		scale += 0.001;
+	}
+	scaleControl.handleY = scaleControl.y + ((scaleControl.barHeight - scaleControl.handleHeight) * (1 - scale));
 }
 
 function draw() {
@@ -74,33 +126,34 @@ function draw() {
 	drawArc(arc.x, arc.y, arc.radius, arc.width, backGradient.startColor, backGradient.endColor);
 	drawArc(arc.x, arc.y, arc.radius, arc.width, frontGradient.startColor, frontGradient.endColor);
 
-	ctx.font = "85px Calibri";
+	ctx.font = "95px Calibri";
 	ctx.textAlign = "right";
 	ctx.fillStyle = getGradient(Math.floor(scale / width), 1 - (scale % width) / width).startColor;
-	ctx.fillText(Math.round(scale * 150 - 25) + "°", 620, 80);
+	ctx.fillText(Math.round(scale * 150 - 25) + "°", 620, 90);
 	ctx.fillStyle = getGradient(Math.ceil(scale / width), (scale % width) / width).startColor;
-	ctx.fillText(Math.round(scale * 150 - 25) + "°", 620, 80);
+	ctx.fillText(Math.round(scale * 150 - 25) + "°", 620, 90);
 
 	ctx.beginPath();
 	ctx.rect(scaleControl.x, scaleControl.y, scaleControl.width, scaleControl.barHeight);
-	ctx.fillStyle = "#393A4B";
+	ctx.fillStyle = "rgba(76, 76, 76, 0.25)";
 	ctx.fill();
 
 	ctx.shadowBlur = 12 * scale;
 	ctx.shadowColor = "rgb(251, 42, 100)";
 	ctx.beginPath();
-	ctx.rect(scaleControl.x, scaleControl.y + ((scaleControl.barHeight - scaleControl.handleHeight) * (1 - scale)), scaleControl.width, scaleControl.handleHeight);
+	ctx.rect(scaleControl.x, scaleControl.handleY, scaleControl.width, scaleControl.handleHeight);
 	ctx.fillStyle = "rgb(251, 42, 100)";
 	ctx.fill();
 	ctx.shadowBlur = 0;
 
 	ctx.save();
-	ctx.rotate(-Math.PI/2);
-	ctx.font = "85px Calibri";
-	ctx.textAlign = "right";
-	ctx.fillStyle = "grey";
-	ctx.fillText("Temperature", scaleControl.x - scaleControl.width, scaleControl.y);
-	ctx.fillStyle = getGradient(Math.ceil(scale / width), (scale % width) / width).startColor;
+	ctx.font = "25px Raleway";
+	ctx.textAlign = "center";
+	ctx.textBaseline = "bottom";
+	ctx.fillStyle = "#525454FF";
+	ctx.translate(scaleControl.x + scaleControl.width, scaleControl.y  + scaleControl.barHeight / 2);
+	ctx.rotate(Math.PI / 2);
+	ctx.fillText("Temperature", 0, 0);
 	ctx.restore();
 }
 
@@ -123,4 +176,21 @@ function getGradient(colorArrayIndex, transparency) {
 		endColor: colorArray[colorArrayIndex].endColor.replace("1.0", transparency + "")
 	};
 	return gradient;
+}
+
+function isWithin(pointX, pointY, rectX, rectY, rectWidth, rectHeight) {
+	if (pointX >= rectX && pointX - rectX <= rectWidth && pointY >= rectY && pointY - rectY <= rectHeight) {
+		return true;
+	}
+	return false;
+}
+
+function bound(num, min, max) {
+	if (num < min) {
+		num = min;
+	}
+	if (num > max) {
+		num = max;
+	}
+	return num;
 }
