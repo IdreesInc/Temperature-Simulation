@@ -145,7 +145,7 @@ function update() {
 		}
 		particle.x += particle.velocity * particle.dx;
 		particle.y += particle.velocity * particle.dy;
-		particle.dy = particle.dy + 0.1 * (1 - scale);
+		particle.dy = particle.dy + 0.1 * (1 - particle.energy);
 
 		for (var j = 0; j < particles.length; j++) {
 			collisionFound = true;
@@ -185,7 +185,7 @@ function update() {
 
 			particle.x = old.x;
 			particle.y = old.y;
-			particle.energy = scale;
+			particle.energy = (scale + particle.energy) / 2;
 		}
 	}
 	if (!collisionFound) {
@@ -238,7 +238,7 @@ function draw() {
 		var particle = particles[i];
 		ctx.beginPath();
 		ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-		ctx.fillStyle = getGradient(Math.floor(particle.energy / width), 1 - (particle.energy % width) / width).startColor;
+		ctx.fillStyle = getGradient(Math.floor(particle.energy / width), 1 - (particle.energy % width) / width).endColor;
 		ctx.fill();
 		ctx.fillStyle = getGradient(Math.ceil(particle.energy / width), (particle.energy % width) / width).startColor;
 		ctx.fill();
