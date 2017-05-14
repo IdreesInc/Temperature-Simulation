@@ -204,12 +204,12 @@ function draw() {
 	drawArc(arc.x, arc.y, arc.radius, arc.width, backGradient.startColor, backGradient.endColor);
 	drawArc(arc.x, arc.y, arc.radius, arc.width, frontGradient.startColor, frontGradient.endColor);
 
-	ctx.font = "95px Calibri";
+	ctx.font = "100px Roboto";
 	ctx.textAlign = "right";
 	ctx.fillStyle = getGradient(Math.floor(scale / width), 1 - (scale % width) / width).startColor;
-	ctx.fillText(Math.round(scale * 150 - 25) + "°", 620, 90);
+	ctx.fillText(Math.round(scale * 150 - 25) + "°", 630, 100);
 	ctx.fillStyle = getGradient(Math.ceil(scale / width), (scale % width) / width).startColor;
-	ctx.fillText(Math.round(scale * 150 - 25) + "°", 620, 90);
+	ctx.fillText(Math.round(scale * 150 - 25) + "°", 630, 100);
 
 	ctx.beginPath();
 	ctx.rect(scaleControl.x, scaleControl.y, scaleControl.width, scaleControl.barHeight);
