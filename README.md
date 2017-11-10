@@ -4,10 +4,10 @@ A small visualization of particles and their reactions to different temperatures
 ### [Check it out here!](https://cdn.rawgit.com/IdreesInc/Science-Simulation/74c4e0de/webpage.html)
 
 #### Simulation showing cooled particles
-![Science simulation while cool](http://idreesinc.com/wp-content/uploads/SciSim_1.png)
+![Science simulation while cool](http://idreesinc.com/images/sci-sim_cold.png)
 #### Simulation showing warmed particles
-![Science simulation while warm](http://idreesinc.com/wp-content/uploads/SciSim_2.png)
+![Science simulation while warm](http://idreesinc.com/images/sci-sim_warm.png)
 #### Simulation showing boiling particles
-![Science simulation while hot](http://idreesinc.com/wp-content/uploads/SciSim_3.png)
+![Science simulation while hot](http://idreesinc.com/images/sci-sim_hot.png)
 
 #### Click [here](https://cdn.rawgit.com/IdreesInc/Science-Simulation/74c4e0de/webpage.html) to view it in action!
