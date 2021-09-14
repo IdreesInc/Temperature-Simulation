@@ -1,5 +1,5 @@
-# Science-Simulation
-A small visualization of particles and their reactions to different temperatures created in HTML5 and JavaScript. Created in a weekend for a job interview, and does not actually simulate the entirety of science.
+# Temperature-Simulation
+A small visualization of particles and their reactions to different temperatures created in HTML5 and JavaScript.
 
 ![Science Simulation in Action](http://idreesinc.com/images/sci-sim_in_action.gif)
 
