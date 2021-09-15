@@ -1,10 +1,10 @@
 /*jshint esversion: 6 */
-var canvas;
-var ctx;
-var arc;
-var colorArray = [];
-var scale = 0;
-var scaleControl = {
+let canvas;
+let ctx;
+let arc;
+let colorArray = [];
+let scale = 0;
+let scaleControl = {
 	x: 540,
 	y: 130,
 	width: 50,
@@ -12,7 +12,7 @@ var scaleControl = {
 	handleHeight: 20,
 	handleY: 0
 };
-var mouse = {
+let mouse = {
 	x: -1,
 	y: -1,
 	clickX: -1,
@@ -21,61 +21,61 @@ var mouse = {
 	isDragging: false,
 	DRAG_THRESHOLD: 10
 };
-var scaleDragged = false;
-var particles = [];
-var NUM_OF_PARTICLES = 20;
-var clearAway = true;
+let scaleDragged = false;
+let particles = [];
+let NUM_OF_PARTICLES = 20;
+let clearAway = true;
 
-$(document).ready(function() {
+$(document).ready(function () {
 	canvas = document.getElementById("canvas");
 	ctx = canvas.getContext("2d");
-	var grey = {
+	let grey = {
 		startColor: "rgba(255, 255, 255, 1.0)",
 		endColor: "rgba(85, 80, 103, 1.0)"
 	};
-	var freezing = {
+	let freezing = {
 		startColor: "rgba(102, 189, 204, 1.0)",
 		endColor: "rgba(0, 104, 139, 1.0)"
 	};
-	var cool = {
+	let cool = {
 		startColor: "rgba(149, 219, 210, 1.0)",
 		endColor: "rgba(102, 189, 204, 1.0)"
 	};
-	var neutral = {
+	let neutral = {
 		startColor: "rgba(168, 219, 52, 1.0)",
 		endColor: "rgba(106, 204, 101, 1.0)"
 	};
-	var warm = {
+	let warm = {
 		startColor: "rgba(255, 206, 82, 1.0)",
 		endColor: "rgba(255, 151, 109, 1.0)"
 	};
-	var hot = {
+	let hot = {
 		startColor: "rgba(255, 195, 113, 1.0)",
 		endColor: "rgba(255, 95, 109, 1.0)"
 	};
 	colorArray = [freezing, cool, neutral, warm, hot];
 
-	$("#card").mousedown(function(e) {
-		var x = e.clientX - $("#card").offset().left;
-		var y = e.clientY - $("#card").offset().top;
+	$("#card").mousedown((e) => {
+		let x = e.clientX - $("#card").offset().left;
+		let y = e.clientY - $("#card").offset().top;
 		mouse.x = x;
 		mouse.y = y;
 		mouse.clickX = x;
 		mouse.clickY = y;
 		mouse.isClicked = true;
 	})
-	.mousemove(function(e) {
-		var x = e.clientX - $("#card").offset().left;
-		var y = e.clientY - $("#card").offset().top;
+	.mousemove((e) => {
+		let x = e.clientX - $("#card").offset().left;
+		let y = e.clientY - $("#card").offset().top;
 		mouse.x = x;
 		mouse.y = y;
 		if (mouse.isClicked && (Math.abs(mouse.clickX - x) > mouse.DRAG_THRESHOLD || Math.abs(mouse.clickY - y) > mouse.DRAG_THRESHOLD)) {
 			mouse.isDragging = true;
 		}
 	})
-	.mouseup(function(e) {
-		var x = e.clientX - $("#card").offset().left;
-		var y = e.clientY - $("#card").offset().top;
+	.mouseup((e) => {
+		let x = e.clientX - $("#card").offset().left;
+		let y = e.clientY - $("#card").offset().top;
 		mouse.x = x;
 		mouse.y = y;
 		mouse.clickX = -1;
@@ -84,6 +84,37 @@ $(document).ready(function() {
 		mouse.isClicked = false;
 	});
 
+	$("#card").on("touchstart", (e) => {
+		let x = e.touches[0].clientX - $("#card").offset().left;
+		let y = e.touches[0].clientY - $("#card").offset().top;
+		mouse.x = x;
+		mouse.y = y;
+		mouse.clickX = x;
+		mouse.clickY = y;
+		mouse.isClicked = true;
+	})
+
+	$("#card").on("touchmove", (e) => {
+		let x = e.touches[0].clientX - $("#card").offset().left;
+		let y = e.touches[0].clientY - $("#card").offset().top;
+		mouse.x = x;
+		mouse.y = y;
+		if (mouse.isClicked && (Math.abs(mouse.clickX - x) > mouse.DRAG_THRESHOLD || Math.abs(mouse.clickY - y) > mouse.DRAG_THRESHOLD)) {
+			mouse.isDragging = true;
+		}
+	})
+
+	$("#card").on("touchend", (e) => {
+		let x = e.touches[0].clientX - $("#card").offset().left;
+		let y = e.touches[0].clientY - $("#card").offset().top;
+		mouse.x = x;
+		mouse.y = y;
+		mouse.clickX = -1;
+		mouse.clickY = -1;
+		mouse.isDragging = false;
+		mouse.isClicked = false;
+	})
+
 	arc = {
 		x: 250,
 		y: canvas.height / 2,
@@ -91,7 +122,7 @@ $(document).ready(function() {
 		width: 16
 	};
 
-	for (var i = 0; i < NUM_OF_PARTICLES; i++) {
+	for (let i = 0; i < NUM_OF_PARTICLES; i++) {
 		particles[i] = {
 			id: i,
 			x: arc.x + 10,
@@ -106,11 +137,11 @@ $(document).ready(function() {
 		};
 	}
 
-	var loop = function(){
+	let loop = function () {
 		update();
 		draw();
 	};
-	var interval = setInterval(loop, 10);
+	let interval = setInterval(loop, 10);
 	draw();
 });
 
@@ -134,10 +165,10 @@ function update() {
 	}
 	scaleControl.handleY = scaleControl.y + ((scaleControl.barHeight - scaleControl.handleHeight) * (1 - scale));
 
-	var collisionFound = false;
-	for (var i = 0; i < particles.length; i++) {
-		var particle = particles[i];
-		var old = clone(particle);
+	let collisionFound = false;
+	for (let i = 0; i < particles.length; i++) {
+		let particle = particles[i];
+		let old = clone(particle);
 
 		particle.velocity = particle.energy * particle.maxVelocity;
 		if (particle.velocity < particle.minVelocity) {
@@ -147,9 +178,9 @@ function update() {
 		particle.y += particle.velocity * particle.dy;
 		particle.dy = particle.dy + 0.1 * (1 - particle.energy);
 
-		for (var j = 0; j < particles.length; j++) {
+		for (let j = 0; j < particles.length; j++) {
 			collisionFound = true;
-			var other = particles[j];
+			let other = particles[j];
 			if (other.id != particle.id && distance(particle.x, particle.y, other.x, other.y) < particle.radius + other.radius) {
 				let dx = particle.x - other.x;
 				let dy = particle.y - other.y;
@@ -166,7 +197,7 @@ function update() {
 				other.energy = energy;
 				particle.x = old.x;
 				particle.y = old.y;
-				while(clearAway && other.id != particle.id && distance(particle.x, particle.y, other.x, other.y) < particle.radius + other.radius) {
+				while (clearAway && other.id != particle.id && distance(particle.x, particle.y, other.x, other.y) < particle.radius + other.radius) {
 					particle.x += particle.velocity * particle.dx;
 					particle.y += particle.velocity * particle.dy;
 				}
@@ -189,16 +220,16 @@ function update() {
 		}
 	}
 	if (!collisionFound) {
-		clearAway  = false;
+		clearAway = false;
 	}
 }
 
 function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-	var width = 1 / (colorArray.length - 1);
-	var backGradient = getGradient(Math.floor(scale / width), 1 - (scale % width) / width);
-	var frontGradient = getGradient(Math.ceil(scale / width), (scale % width) / width);
+	let width = 1 / (colorArray.length - 1);
+	let backGradient = getGradient(Math.floor(scale / width), 1 - (scale % width) / width);
+	let frontGradient = getGradient(Math.ceil(scale / width), (scale % width) / width);
 
 	drawArc(arc.x, arc.y, arc.radius, arc.width, "grey", "grey");
 	drawArc(arc.x, arc.y, arc.radius, arc.width, backGradient.startColor, backGradient.endColor);
@@ -229,13 +260,13 @@ function draw() {
 	ctx.textAlign = "center";
 	ctx.textBaseline = "bottom";
 	ctx.fillStyle = "#525454FF";
-	ctx.translate(scaleControl.x + scaleControl.width, scaleControl.y  + scaleControl.barHeight / 2);
+	ctx.translate(scaleControl.x + scaleControl.width, scaleControl.y + scaleControl.barHeight / 2);
 	ctx.rotate(Math.PI / 2);
 	ctx.fillText("Temperature", 0, 0);
 	ctx.restore();
 
-	for (var i = 0; i < particles.length; i++) {
-		var particle = particles[i];
+	for (let i = 0; i < particles.length; i++) {
+		let particle = particles[i];
 		ctx.beginPath();
 		ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
 		ctx.fillStyle = getGradient(Math.floor(particle.energy / width), 1 - (particle.energy % width) / width).endColor;
@@ -248,7 +279,7 @@ function draw() {
 function drawArc(x, y, radius, lineWidth, startColor, endColor) {
 	ctx.beginPath();
 	ctx.arc(x, y, radius, 0, Math.PI * 2);
-	var gradient = ctx.createLinearGradient(0, canvas.height / 5, 0, canvas.height / 4 * 3);
+	let gradient = ctx.createLinearGradient(0, canvas.height / 5, 0, canvas.height / 4 * 3);
 	gradient.addColorStop("0", startColor);
 	gradient.addColorStop("1", endColor);
 
@@ -259,7 +290,7 @@ function drawArc(x, y, radius, lineWidth, startColor, endColor) {
 }
 
 function getGradient(colorArrayIndex, transparency) {
-	var gradient = {
+	let gradient = {
 		startColor: colorArray[colorArrayIndex].startColor.replace("1.0", transparency + ""),
 		endColor: colorArray[colorArrayIndex].endColor.replace("1.0", transparency + "")
 	};
